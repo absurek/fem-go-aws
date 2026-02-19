@@ -1,3 +1,38 @@
 # Frontend Masters: Build Go Apps That Scale on AWS
 
-by Melkey
+- **Teacher**: Melkey
+- **Official Repo**: [https://github.com/Melkeydev/FrontEndMasters](https://github.com/Melkeydev/FrontEndMasters)
+
+---
+
+## Setup
+
+Dependencies installed in the devcontainer:
+- [Go](https://go.dev/dl/)
+- [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+- [AWS CDK](https://docs.aws.amazon.com/cdk/v2/guide/home.html)
+
+Prepare the environment:
+1) Create an [AWS Account](https://portal.aws.amazon.com/billing/signup) if you don't already have one.
+2) Configure an AWS user permissions:
+    - [Create an IAM or IAM Identity Center administrative account](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-prereqs.html#getting-started-prereqs-iam)
+3) Configure the AWS CLI:
+    - Configure [short or long term credentials](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-quickstart.html)
+    - Confirm your setup with: `aws s3 ls` and `aws sts get-caller-identity`
+4) Bootstrap your CDK environment with:
+```bash
+cdk bootstrap aws://ACCOUNT-NUMBER/REGION
+```
+
+Here's [more info](https://docs.aws.amazon.com/cdk/v2/guide/home.html) about boostrapping the CDK.
+Your `ACCOUNT-NUMBER` and `REGION` can be found in the AWS console or using the following AWS CLI commands:
+
+Get your `ACCOUNT-NUMBER` using the following AWS CLI command:
+```bash
+aws sts get-caller-identity --query Account --output text
+```
+
+Get your `REGION` using the following AWS CLI command aws configure get region
+```bash
+aws configure get region
+```
