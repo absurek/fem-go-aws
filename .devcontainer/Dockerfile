@@ -1,5 +1,5 @@
 
-FROM ubuntu:24.04
+FROM node:24
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV GOLANG_VERSION=1.25.6
@@ -16,6 +16,9 @@ RUN apt-get update && \
     tree \
     wget \
     gnupg \
+    groff \
+    less \
+    unzip \
     lsb-release \
     openssh-client \
     make \
@@ -35,3 +38,14 @@ ENV PATH="/usr/local/go/bin:${PATH}"
 RUN go install honnef.co/go/tools/cmd/staticcheck@latest && \
     go install github.com/securego/gosec/v2/cmd/gosec@latest && \
     echo 'export PATH=$PATH:$HOME/go/bin' >> ~/.bashrc
+
+#------------------------
+# Install AWS CLI & CDK #
+#------------------------
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+    unzip awscliv2.zip && \
+    ./aws/install && \
+    npm install -g aws-cdk && \
+    # verify
+    aws --version && \
+    cdk --version
