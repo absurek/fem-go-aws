@@ -47,3 +47,14 @@ The `cdk.json` file tells the CDK toolkit how to execute your app.
  * `cdk diff`        compare deployed stack with current state
  * `cdk synth`       emits the synthesized CloudFormation template
  * `go test`         run unit tests
+
+## Differences between the Original Course and this Version
+
+### Project Structure
+
+In the course there was no emphasis on the project structure,
+Melkey soley focused on demonstrating the technologies.  
+
+### Architecture
+
+`amd64` is the default, but `arm64` is cheaper and faster for most Lambda workloads.
