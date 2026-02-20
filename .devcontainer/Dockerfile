@@ -18,6 +18,7 @@ RUN apt-get update && \
     gnupg \
     groff \
     less \
+    zip \
     unzip \
     lsb-release \
     openssh-client \
@@ -34,11 +35,16 @@ RUN wget -q https://go.dev/dl/go${GOLANG_VERSION}.linux-amd64.tar.gz && \
 
 ENV PATH="/usr/local/go/bin:${PATH}"
 
-# TODO(absurek): make Go dev tools available to the node user
-# Install Go dev tools
+# Install Go tools for the node user
+ARG NODE_HOME=/home/node
+
 RUN go install honnef.co/go/tools/cmd/staticcheck@latest && \
     go install github.com/securego/gosec/v2/cmd/gosec@latest && \
-    echo 'export PATH=$PATH:$HOME/go/bin' >> ~/.bashrc
+    mkdir -p ${NODE_HOME}/go/bin/ && \
+    mv /root/go/bin/* ${NODE_HOME}/go/bin/ && \
+    chown -R node:node ${NODE_HOME}/go
+
+ENV PATH="${NODE_HOME}/go/bin:/usr/local/go/bin:${PATH}"
 
 #------------------------
 # Install AWS CLI & CDK #
