@@ -1,4 +1,4 @@
-module fem-go-aws
+module github.com/absurek/fem-go-aws
 
 go 1.25.6
 
