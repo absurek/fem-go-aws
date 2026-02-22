@@ -13,7 +13,7 @@ const userTable = "UserTable"
 
 type Repository interface {
 	UserExists(ctx context.Context, username string) (bool, error)
-	InsertUser(ctx context.Context, user RegisterUser) error
+	InsertUser(ctx context.Context, user User) error
 }
 
 type DynamoRepository struct {
@@ -49,7 +49,7 @@ func (dr *DynamoRepository) UserExists(ctx context.Context, username string) (bo
 	return true, nil
 }
 
-func (dr *DynamoRepository) InsertUser(ctx context.Context, user RegisterUser) error {
+func (dr *DynamoRepository) InsertUser(ctx context.Context, user User) error {
 	item, err := attributevalue.MarshalMap(user)
 	if err != nil {
 		return err
