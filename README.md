@@ -58,3 +58,12 @@ Melkey soley focused on demonstrating the technologies.
 ### Architecture
 
 `amd64` is the default, but `arm64` is cheaper and faster for most Lambda workloads.
+
+### AWS SDK for Go
+
+The aws-sdk-go module has been deprecated since the course came out:
+```
+go: module github.com/aws/aws-sdk-go is deprecated: aws-sdk-go is deprecated. Use aws-sdk-go-v2.
+```
+
+This project uses [AWS SDK for Go v2](https://docs.aws.amazon.com/sdk-for-go/v2/developer-guide/welcome.html)
