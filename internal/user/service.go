@@ -8,7 +8,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var ErrUserAlreadyExists = errors.New("user alredy exists")
+var (
+	ErrUserAlreadyExists  = errors.New("user alredy exists")
+	ErrInvalidCredentials = errors.New("invalid credentials")
+)
 
 type Service struct {
 	repository Repository
@@ -20,40 +23,58 @@ func NewService(repository Repository) *Service {
 	}
 }
 
-func (s *Service) RegisterUser(ctx context.Context, reg RegisterUser) error {
-	exists, err := s.repository.UserExists(ctx, reg.Username)
+func (s *Service) RegisterUser(ctx context.Context, data UserData) error {
+	exists, err := s.repository.UserExists(ctx, data.Username)
 	if err != nil {
-		return fmt.Errorf("checking if user exists (username=%s): %w", reg.Username, err)
+		return fmt.Errorf("checking if user exists (username=%s): %w", data.Username, err)
 	}
 
 	if exists {
 		return ErrUserAlreadyExists
 	}
 
-	user, err := newUser(reg)
+	user, err := newUser(data)
 	if err != nil {
-		return fmt.Errorf("creating user (username=%s): %w", reg.Username, err)
+		return fmt.Errorf("creating user (username=%s): %w", data.Username, err)
 	}
 
 	if err := s.repository.InsertUser(ctx, user); err != nil {
-		return fmt.Errorf("inserting user (username=%s): %w", reg.Username, err)
+		return fmt.Errorf("inserting user (username=%s): %w", data.Username, err)
 	}
 
 	return nil
 }
 
-func newUser(reg RegisterUser) (User, error) {
-	passwordHash, err := bcrypt.GenerateFromPassword([]byte(reg.Password), 10)
+// TODO(absurek): create and return JWT
+func (s *Service) LoginUser(ctx context.Context, data UserData) error {
+	user, err := s.repository.GetUser(ctx, data.Username)
+	if err != nil {
+		if errors.Is(err, ErrUserNotFound) {
+			return ErrInvalidCredentials
+		}
+
+		return fmt.Errorf("getting user (username=%s): %w", data.Username, err)
+	}
+
+	if !validatePassword(user.PasswordHash, data.Password) {
+		return ErrInvalidCredentials
+	}
+
+	return nil
+}
+
+func newUser(data UserData) (User, error) {
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(data.Password), 10)
 	if err != nil {
 		return User{}, err
 	}
 
 	return User{
-		Username:     reg.Username,
+		Username:     data.Username,
 		PasswordHash: string(passwordHash),
 	}, nil
 }
 
-func validatePassword(hashedPassword, plainTextPassword string) bool {
-	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(plainTextPassword)) == nil
+func validatePassword(passwordHash, password string) bool {
+	return bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(password)) == nil
 }

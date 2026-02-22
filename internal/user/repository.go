@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"errors"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
@@ -11,9 +12,12 @@ import (
 
 const userTable = "UserTable"
 
+var ErrUserNotFound = errors.New("user not found")
+
 type Repository interface {
 	UserExists(ctx context.Context, username string) (bool, error)
 	InsertUser(ctx context.Context, user User) error
+	GetUser(ctx context.Context, username string) (User, error)
 }
 
 type DynamoRepository struct {
@@ -64,4 +68,30 @@ func (dr *DynamoRepository) InsertUser(ctx context.Context, user User) error {
 	}
 
 	return nil
+}
+
+func (dr *DynamoRepository) GetUser(ctx context.Context, username string) (User, error) {
+	usernameav, err := attributevalue.Marshal(username)
+	if err != nil {
+		return User{}, err
+	}
+
+	result, err := dr.client.GetItem(ctx, &dynamodb.GetItemInput{
+		TableName: aws.String(dr.table),
+		Key:       map[string]types.AttributeValue{"username": usernameav},
+	})
+	if err != nil {
+		return User{}, err
+	}
+
+	if result.Item == nil {
+		return User{}, ErrUserNotFound
+	}
+
+	var user User
+	if err := attributevalue.UnmarshalMap(result.Item, &user); err != nil {
+		return User{}, err
+	}
+
+	return user, nil
 }

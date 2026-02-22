@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/aws/aws-cdk-go/awscdk/v2"
+	"github.com/aws/aws-cdk-go/awscdk/v2/awsapigateway"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awsdynamodb"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awslambda"
 	"github.com/aws/constructs-go/constructs/v10"
@@ -36,6 +37,26 @@ func NewFemGoAwsStack(scope constructs.Construct, id string, props *FemGoAwsStac
 	})
 
 	table.GrantReadWriteData(lambda)
+
+	api := awsapigateway.NewRestApi(stack, jsii.String("MyRestApi"), &awsapigateway.RestApiProps{
+		DefaultCorsPreflightOptions: &awsapigateway.CorsOptions{
+			AllowHeaders: jsii.Strings("Content-Type", "Authorization"),
+			AllowMethods: jsii.Strings("GET", "POST", "DELETE", "PUT", "OPTIONS"),
+			AllowOrigins: jsii.Strings("*"), // TODO(absurek)
+		},
+		DeployOptions: &awsapigateway.StageOptions{
+			LoggingLevel: awsapigateway.MethodLoggingLevel_INFO,
+		},
+		CloudWatchRole: jsii.Bool(true),
+	})
+
+	integration := awsapigateway.NewLambdaIntegration(lambda, nil)
+
+	registerRoute := api.Root().AddResource(jsii.String("register"), nil)
+	registerRoute.AddMethod(jsii.String("POST"), integration, nil)
+
+	loginRoute := api.Root().AddResource(jsii.String("login"), nil)
+	loginRoute.AddMethod(jsii.String("POST"), integration, nil)
 
 	return stack
 }
