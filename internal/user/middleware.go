@@ -77,6 +77,7 @@ func parseJWT(token string) (jwt.MapClaims, error) {
 	return claims, nil
 }
 
+// TODO(absurek): this is atrocious
 func isExpired(claims jwt.MapClaims) (bool, error) {
 	expires, ok := claims["expires"].(float64)
 	if !ok {
