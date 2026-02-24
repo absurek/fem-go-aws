@@ -5,6 +5,7 @@ import (
 
 	"github.com/absurek/fem-go-aws/internal/application"
 	"github.com/absurek/fem-go-aws/internal/response"
+	"github.com/absurek/fem-go-aws/internal/user"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 )
@@ -18,6 +19,8 @@ func main() {
 			return app.UserApi.RegisterUser(context.Background(), request), nil
 		case "/login":
 			return app.UserApi.LoginUser(context.Background(), request), nil
+		case "/protected":
+			return user.ValidateJWTMiddleware(app.UserApi.Protected)(context.Background(), request), nil
 		default:
 			return response.NotFound(), nil
 		}

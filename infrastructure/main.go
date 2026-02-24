@@ -58,6 +58,9 @@ func NewFemGoAwsStack(scope constructs.Construct, id string, props *FemGoAwsStac
 	loginRoute := api.Root().AddResource(jsii.String("login"), nil)
 	loginRoute.AddMethod(jsii.String("POST"), integration, nil)
 
+	protectedRoute := api.Root().AddResource(jsii.String("protected"), nil)
+	protectedRoute.AddMethod(jsii.String("GET"), integration, nil)
+
 	return stack
 }
 

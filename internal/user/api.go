@@ -53,7 +53,7 @@ func (a *Api) LoginUser(ctx context.Context, request events.APIGatewayProxyReque
 		return response.BadRequest()
 	}
 
-	err := a.service.LoginUser(ctx, data)
+	token, err := a.service.LoginUser(ctx, data)
 	if err != nil {
 		if errors.Is(err, ErrInvalidCredentials) {
 			response.Unauthorized()
@@ -62,5 +62,9 @@ func (a *Api) LoginUser(ctx context.Context, request events.APIGatewayProxyReque
 		return response.InternalServerError()
 	}
 
-	return response.Ok("login successful")
+	return response.Ok(token)
+}
+
+func (a *Api) Protected(ctx context.Context, request events.APIGatewayProxyRequest) events.APIGatewayProxyResponse {
+	return response.Ok("This is a protected endpoint")
 }
