@@ -21,7 +21,7 @@ func NewApi(service *Service) *Api {
 	}
 }
 
-func (a *Api) RegisterUser(request events.APIGatewayProxyRequest) events.APIGatewayProxyResponse {
+func (a *Api) RegisterUser(ctx context.Context, request events.APIGatewayProxyRequest) events.APIGatewayProxyResponse {
 	var data UserData
 	if err := json.Unmarshal([]byte(request.Body), &data); err != nil {
 		return response.BadRequest()
@@ -31,7 +31,7 @@ func (a *Api) RegisterUser(request events.APIGatewayProxyRequest) events.APIGate
 		return response.BadRequest()
 	}
 
-	err := a.service.RegisterUser(context.TODO(), data)
+	err := a.service.RegisterUser(ctx, data)
 	if err != nil {
 		if errors.Is(err, ErrUserAlreadyExists) {
 			return response.BadRequest()
@@ -43,7 +43,7 @@ func (a *Api) RegisterUser(request events.APIGatewayProxyRequest) events.APIGate
 	return response.Created("user created")
 }
 
-func (a *Api) LoginUser(request events.APIGatewayProxyRequest) events.APIGatewayProxyResponse {
+func (a *Api) LoginUser(ctx context.Context, request events.APIGatewayProxyRequest) events.APIGatewayProxyResponse {
 	var data UserData
 	if err := json.Unmarshal([]byte(request.Body), &data); err != nil {
 		return response.BadRequest()
@@ -53,7 +53,7 @@ func (a *Api) LoginUser(request events.APIGatewayProxyRequest) events.APIGateway
 		return response.BadRequest()
 	}
 
-	err := a.service.LoginUser(context.TODO(), data)
+	err := a.service.LoginUser(ctx, data)
 	if err != nil {
 		if errors.Is(err, ErrInvalidCredentials) {
 			response.Unauthorized()
