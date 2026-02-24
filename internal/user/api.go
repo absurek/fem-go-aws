@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"net/http"
 
+	"github.com/absurek/fem-go-aws/internal/response"
 	"github.com/aws/aws-lambda-go/events"
 )
 
@@ -21,76 +21,46 @@ func NewApi(service *Service) *Api {
 	}
 }
 
-func (a *Api) RegisterUser(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func (a *Api) RegisterUser(request events.APIGatewayProxyRequest) events.APIGatewayProxyResponse {
 	var data UserData
 	if err := json.Unmarshal([]byte(request.Body), &data); err != nil {
-		return events.APIGatewayProxyResponse{
-			Body:       "bad request",
-			StatusCode: http.StatusBadRequest,
-		}, err
+		return response.BadRequest()
 	}
 
 	if data.Username == "" || data.Password == "" {
-		return events.APIGatewayProxyResponse{
-			Body:       "bad request",
-			StatusCode: http.StatusBadRequest,
-		}, ErrEmptyUserData
+		return response.BadRequest()
 	}
 
 	err := a.service.RegisterUser(context.TODO(), data)
 	if err != nil {
 		if errors.Is(err, ErrUserAlreadyExists) {
-			return events.APIGatewayProxyResponse{
-				Body:       "bad request",
-				StatusCode: http.StatusBadRequest,
-			}, err
+			return response.BadRequest()
 		}
 
-		return events.APIGatewayProxyResponse{
-			Body:       "internal server error",
-			StatusCode: http.StatusInternalServerError,
-		}, err
+		return response.InternalServerError()
 	}
 
-	return events.APIGatewayProxyResponse{
-		Body:       "user created",
-		StatusCode: http.StatusCreated,
-	}, nil
+	return response.Created("user created")
 }
 
-func (a *Api) LoginUser(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func (a *Api) LoginUser(request events.APIGatewayProxyRequest) events.APIGatewayProxyResponse {
 	var data UserData
 	if err := json.Unmarshal([]byte(request.Body), &data); err != nil {
-		return events.APIGatewayProxyResponse{
-			Body:       "bad request",
-			StatusCode: http.StatusBadRequest,
-		}, err
+		return response.BadRequest()
 	}
 
 	if data.Username == "" || data.Password == "" {
-		return events.APIGatewayProxyResponse{
-			Body:       "unauthorized",
-			StatusCode: http.StatusUnauthorized,
-		}, ErrEmptyUserData
+		return response.BadRequest()
 	}
 
 	err := a.service.LoginUser(context.TODO(), data)
 	if err != nil {
 		if errors.Is(err, ErrInvalidCredentials) {
-			return events.APIGatewayProxyResponse{
-				Body:       "unauthorized",
-				StatusCode: http.StatusUnauthorized,
-			}, err
+			response.Unauthorized()
 		}
 
-		return events.APIGatewayProxyResponse{
-			Body:       "internal server error",
-			StatusCode: http.StatusInternalServerError,
-		}, err
+		return response.InternalServerError()
 	}
 
-	return events.APIGatewayProxyResponse{
-		Body:       "Successful login", // TODO(absurek): JWT
-		StatusCode: http.StatusOK,
-	}, nil
+	return response.Ok("login successful")
 }
